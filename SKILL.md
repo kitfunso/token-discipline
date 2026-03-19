@@ -155,6 +155,9 @@ These are mandatory unless stakes clearly justify more work.
 - Do not replay the entire history on a follow-up.
 - Do not expand execution into analysis unless asked.
 - Do not rerun the same work because duplicate queued messages arrived.
+- Direct user messages always pre-empt background smoke tests, evals, and diagnostics.
+- Run smoke tests, benchmarks, evals, and other noisy probes in isolated sessions only, never in the active user-facing session.
+- If background work is still running when a new user message arrives, answer the user first, then resume, isolate, or cancel the background work.
 
 If you need to escalate, say so briefly:
 - what is unclear

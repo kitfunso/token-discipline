@@ -173,6 +173,8 @@ A disciplined agent should:
 - not rerun work because duplicate queued messages arrived
 - switch to delta mode on long tasks instead of replaying the whole story
 - explicitly announce escalation when moving from low to medium/high effort
+- let direct user messages pre-empt background smoke tests, evals, and diagnostics
+- run smoke tests, evals, and other noisy probes in isolated sessions, not the active user-facing session
 
 ---
 

@@ -32,6 +32,9 @@ Classify each request as one of:
 - do not reread large files if a snippet is enough
 - do not repeat work for duplicate prompts
 - use compact summaries and delta updates on long tasks
+- direct user messages pre-empt background smoke tests, evals, and diagnostics
+- run smoke tests, benchmarks, evals, and other noisy probes in isolated sessions only
+- if background work is still running when a new user message arrives, answer the user first, then resume, isolate, or cancel the background work
 
 ## Output
 Keep answers as short as the task allows.

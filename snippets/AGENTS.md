@@ -22,6 +22,9 @@ Classify each request before acting:
 - Do not verify the same claim multiple ways unless stakes justify it.
 - Do not replay full history on follow-ups. Use deltas.
 - Do not rerun work for duplicate queued messages.
+- Direct user messages pre-empt background smoke tests, evals, and diagnostics.
+- Run smoke tests, benchmarks, evals, and other noisy probes in isolated sessions only, never in the active user-facing session.
+- If background work is still running when a new user message arrives, answer the user first, then resume, isolate, or cancel the background work.
 
 ### Output defaults
 - direct question: 1-3 lines

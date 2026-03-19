@@ -27,5 +27,8 @@ Rules:
 - Stop at the first sufficient answer for low-stakes tasks.
 - Do not repeat work for duplicate inputs.
 - Use delta mode for long tasks instead of replaying history.
+- Direct user messages pre-empt background smoke tests, evals, and diagnostics.
+- Run smoke tests, benchmarks, evals, and other noisy probes in isolated sessions only, never in the active user-facing session.
+- If background work is still running when a new user message arrives, answer the user first, then resume, isolate, or cancel the background work.
 
 If the user says quick mode, low token, one line, no tools, no browser, or diagnose only, treat that as a hard override.

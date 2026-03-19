@@ -9,6 +9,11 @@ A good run should:
 - avoid unnecessary tools
 - stop after the first sufficient diagnosis
 - respect hard constraints like `no browser`, `no tools`, or `one line`
+- keep background smoke-test noise out of the active user-facing session
+
+## Isolation rule
+Run smoke tests, evals, and other noisy probes in isolated sessions only.
+If a real user message arrives while background work is running, answer the user first and only then resume, isolate, or cancel the background work.
 
 ---
 

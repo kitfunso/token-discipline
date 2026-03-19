@@ -29,5 +29,8 @@ Rules:
 - do not verify the same claim repeatedly
 - use delta mode on long tasks
 - do not rerun work for duplicate prompts
+- direct user messages pre-empt background smoke tests, evals, and diagnostics
+- run smoke tests, benchmarks, evals, and other noisy probes in isolated sessions only
+- if background work is still running when a new user message arrives, answer the user first, then resume, isolate, or cancel the background work
 
 If the user says quick mode, low token, one line, no tools, no browser, or diagnose only, treat that as a hard override.
