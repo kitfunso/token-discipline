@@ -1,0 +1,125 @@
+{
+  "skill_name": "token-discipline",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Did we push hippo yet?",
+      "expected_output": "Answers directly in the first sentence, uses no tools unless needed, stays extremely short.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Why is GitHub still showing the old version? Quick mode. No browser unless really needed.",
+      "expected_output": "Checks the most likely source first, keeps tool use low, stops at likely root cause instead of expanding the investigation.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Read this file and tell me the one line I need to change.",
+      "expected_output": "Reads only the relevant snippet or matching lines rather than loading the full file into context.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Give me 3 concise X drafts for Hippo 0.6.0. Keep it practical, not technical.",
+      "expected_output": "Returns a small number of strong drafts without bloated explanation or over-brainstorming.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Diagnose only: is this deployment issue real or just cache?",
+      "expected_output": "Keeps scope to diagnosis, does not drift into unrelated strategy or implementation work.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "We have a long thread already. Summarize only what changed since yesterday.",
+      "expected_output": "Uses delta mode instead of replaying the whole history.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "No tools. One line only. Is this a good release note?",
+      "expected_output": "Obeys the hard constraints and answers in one line.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "Compare three approaches for building a token-aware agent framework.",
+      "expected_output": "Recognizes this is research, allows more structure and depth, but still avoids obvious waste.",
+      "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "Same message may have arrived three times while you were busy. Do not rerun the work unless necessary.",
+      "expected_output": "Acknowledges duplicate-message discipline and avoids repeated work.",
+      "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "Low token mode: tell me if this is safe to deploy, and only say more if you're unsure.",
+      "expected_output": "Gives a short answer first and only expands if the evidence is actually insufficient.",
+      "files": []
+    },
+    {
+      "id": 11,
+      "prompt": "Just answer this. Is 0.6.0 actually live on npm yet?",
+      "expected_output": "Treats this as a direct question, answers first, and avoids unnecessary narration.",
+      "files": []
+    },
+    {
+      "id": 12,
+      "prompt": "I only want the likely cause, not a full investigation. Why is this badge still stale?",
+      "expected_output": "Stops after likely cause, does not fan out into multi-surface verification.",
+      "files": []
+    },
+    {
+      "id": 13,
+      "prompt": "No browser. Check whether the release tag exists and tell me the result in two lines max.",
+      "expected_output": "Honors the no-browser constraint and keeps the result short.",
+      "files": []
+    },
+    {
+      "id": 14,
+      "prompt": "Look through this repo and tell me which file matters most for changing the skill trigger behavior.",
+      "expected_output": "Uses search-first and reads targeted files, not the whole repo indiscriminately.",
+      "files": []
+    },
+    {
+      "id": 15,
+      "prompt": "Give me 2 naming options for this repo and one sentence on which one you'd choose.",
+      "expected_output": "Provides a small number of strong options without brainstorming sprawl.",
+      "files": []
+    },
+    {
+      "id": 16,
+      "prompt": "Be brief. What changed between the previous release and this one?",
+      "expected_output": "Summarizes only the meaningful delta and avoids replaying the whole history.",
+      "files": []
+    },
+    {
+      "id": 17,
+      "prompt": "We are already near the context limit. Continue the task using a compact state summary first.",
+      "expected_output": "Creates a compact objective/decisions/open tasks/next step summary before continuing.",
+      "files": []
+    },
+    {
+      "id": 18,
+      "prompt": "I think this simple bug might just be user cache. Please don't overdo it.",
+      "expected_output": "Keeps diagnosis cheap and proportionate rather than escalating immediately.",
+      "files": []
+    },
+    {
+      "id": 19,
+      "prompt": "Write a practical GitHub repo description and 5 topic tags for token-discipline.",
+      "expected_output": "Produces a concise, useful result rather than overexplaining branding strategy.",
+      "files": []
+    },
+    {
+      "id": 20,
+      "prompt": "Quick mode, max 2 tool calls: tell me whether this repo is ready for a first public push.",
+      "expected_output": "Respects the hard ceiling, gives a practical judgment, and avoids unnecessary extra work.",
+      "files": []
+    }
+  ]
+}
