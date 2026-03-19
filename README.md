@@ -192,16 +192,37 @@ If step 2 or 3 gives a strong enough answer, stop.
 ## Quick install
 
 ### Option 1: Use the skill
-Copy `SKILL.md` into your skills system and trigger it whenever the user wants concise, fast, low-token behavior.
+Copy `SKILL.md` into your skills system and trigger it whenever the user wants concise, fast, low-token, answer-first behavior.
 
 ### Option 2: Paste the snippets into your rules files
 See:
 - `snippets/AGENTS.md`
 - `snippets/CLAUDE.md`
 - `snippets/CURSOR_RULES.md`
+- `snippets/SYSTEM_PROMPT_BLOCK.md`
 
 ### Option 3: Adopt the method manually
-Use the task table, budget modes, and stop rules in your own system prompt or agent operating docs.
+Use the task table, budget modes, stop rules, and tool order in your own system prompt or agent operating docs.
+
+## Platform install map
+
+### OpenClaw
+- install the skill at `~/.openclaw/skills/token-discipline/SKILL.md`
+- optionally reinforce it in your workspace `AGENTS.md`
+
+### Claude Code
+- add the policy block to `CLAUDE.md`
+- use the skill text as guidance for answer-first, cheap-first behavior
+
+### Codex-style AGENTS setups
+- add the policy block to `AGENTS.md`
+- or install a global version in `~/.codex/AGENTS.md`
+
+### Cursor
+- paste the Cursor snippet into `.cursorrules`
+
+### Generic system prompts
+- use `snippets/SYSTEM_PROMPT_BLOCK.md`
 
 ---
 
