@@ -1,0 +1,86 @@
+{
+  "generated_at": "2026-03-20T09:27:43.611186+00:00",
+  "reports": [
+    {
+      "kind": "session",
+      "path": "C:\\Users\\skf_s\\.openclaw\\agents\\main\\sessions\\td-benchmark-disciplined-eval-2-d.jsonl",
+      "session_id": "td-benchmark-disciplined-eval-2-d",
+      "prompt": "Why is GitHub still showing the old version? Quick mode. No browser unless really needed.",
+      "eval_id": 2,
+      "tool_calls": 2,
+      "unique_tools": [
+        "hippo_recall",
+        "memory_search"
+      ],
+      "input_tokens": 29698,
+      "output_tokens": 280,
+      "total_tokens": 87450,
+      "cache_read_tokens": 57472,
+      "cache_write_tokens": 0,
+      "first_response_ms": 4,
+      "completion_ms": 18791,
+      "final_text": "[[reply_to_current]] Because GitHub is probably showing the last published/tagged release, not just the bumped version in the repo.\n\nI checked memory and the likely causes are: the npm package wasn\u2019t published yet, or the semver tag/GitHub release wasn\u2019t pushed. For Hippo specifically, the README npm badge follows the latest npm publish, not `package.json`. Want me to verify which one is missing?",
+      "final_word_count": 61,
+      "final_line_count": 3,
+      "assistant_opened_with_text": false,
+      "provider": "openai-codex",
+      "model": "gpt-5.4",
+      "status": "ok",
+      "error_message": null
+    },
+    {
+      "kind": "session",
+      "path": "C:\\Users\\skf_s\\.openclaw\\agents\\main\\sessions\\td-benchmark-disciplined-eval-13-d.jsonl",
+      "session_id": "td-benchmark-disciplined-eval-13-d",
+      "prompt": "No browser. Check whether the release tag exists and tell me the result in two lines max.",
+      "eval_id": 13,
+      "tool_calls": 2,
+      "unique_tools": [
+        "exec",
+        "read"
+      ],
+      "input_tokens": 58345,
+      "output_tokens": 334,
+      "total_tokens": 90935,
+      "cache_read_tokens": 32256,
+      "cache_write_tokens": 0,
+      "first_response_ms": 5,
+      "completion_ms": 12201,
+      "final_text": "[[reply_to_current]] No, there\u2019s no release tag on the current `clawd` repo HEAD.\n`git tag --points-at HEAD` returned nothing.",
+      "final_word_count": 18,
+      "final_line_count": 2,
+      "assistant_opened_with_text": false,
+      "provider": "openai-codex",
+      "model": "gpt-5.4",
+      "status": "ok",
+      "error_message": null
+    },
+    {
+      "kind": "session",
+      "path": "C:\\Users\\skf_s\\.openclaw\\agents\\main\\sessions\\td-benchmark-disciplined-eval-20-d.jsonl",
+      "session_id": "td-benchmark-disciplined-eval-20-d",
+      "prompt": "Quick mode, max 2 tool calls: tell me whether this repo is ready for a first public push.",
+      "eval_id": 20,
+      "tool_calls": 2,
+      "unique_tools": [
+        "exec",
+        "read"
+      ],
+      "input_tokens": 31354,
+      "output_tokens": 525,
+      "total_tokens": 91527,
+      "cache_read_tokens": 59648,
+      "cache_write_tokens": 0,
+      "first_response_ms": 4,
+      "completion_ms": 14483,
+      "final_text": "[[reply_to_current]] No, not clean enough for a first public push, and it\u2019s not actually a first push anyway because this repo already has `origin` set to `github.com/kitfunso/kit.git` and is `ahead 9`.\n\nMain blocker: the working tree is dirty with a lot of modified/untracked files, including memory/state files and workspace config, so you should stage intentionally before pushing.",
+      "final_word_count": 57,
+      "final_line_count": 3,
+      "assistant_opened_with_text": false,
+      "provider": "openai-codex",
+      "model": "gpt-5.4",
+      "status": "ok",
+      "error_message": null
+    }
+  ]
+}

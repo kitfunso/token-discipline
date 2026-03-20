@@ -1,367 +1,255 @@
 # token-discipline
 
-**Task-aware token budgeting for AI agents.**
+**Token optimization for AI agents through task routing, budget modes, stop rules, and OpenClaw-first integration scaffolding.**
 
-Most agents do not fail because they are dumb.
-They fail because they use the wrong amount of effort for the job.
+Most agents waste tokens in predictable ways:
+- they read too much
+- they verify too many times
+- they narrate too much
+- they treat direct questions like investigations
 
-They read too much, verify too many times, narrate too much, and turn simple questions into investigations.
+`token-discipline` gives the agent a cheaper default path:
+1. classify the task
+2. set the budget
+3. use the cheapest adequate tool first
+4. stop once the task is satisfied
+5. escalate only when the cheap path fails
 
-`token-discipline` is a small public framework for fixing that.
-It gives agents a practical way to decide:
-- what kind of task this is
-- how much effort it deserves
-- which tools to use first
-- when to stop
-- how short the answer should be
+The goal is not "always do less."
+The goal is proportional effort.
 
-This repo includes:
-- a reusable method
-- a drop-in `SKILL.md`
-- copy-paste snippets for common agent setups
-- examples and starter eval prompts
+## What this repo gives you
 
----
+- a reusable `SKILL.md`
+- copy-paste snippets for `AGENTS.md`, `CLAUDE.md`, Cursor, and system prompts
+- an OpenClaw-first install path
+- structured eval prompts for benchmark runs
+- an install checker for OpenClaw setups
+- an OpenClaw trace parser for session and cron JSONL logs
+- a benchmark scorecard generator
+- a machine-readable OpenClaw policy file for future enforcement work
 
-## The problem
+## Why this exists
 
-Most prompt files say things like:
+Most prompt layers say:
 - be concise
 - be efficient
-- avoid wasting tokens
+- do not waste tokens
 
-That sounds nice. It rarely works.
+That is too vague to shape behavior.
 
-The real issue is that agents usually lack **proportional effort**.
+What usually goes wrong instead:
+- the agent opens a browser when `grep` or an API check was enough
+- the agent reads the whole file when 10 lines mattered
+- the agent proves the same fact through CLI, API, and browser
+- the agent answers "Did we push it yet?" with a paragraph
+- the agent reruns the same work because duplicate messages arrived
+- background smoke tests keep talking while a real user is waiting
 
-They often:
-- use browser automation when a local check would do
-- read a whole file when 10 lines matter
-- keep verifying the same thing through 3 different surfaces
-- answer direct questions with an essay
-- carry too much chat history forward
-- rerun work because the same message arrived twice
+That burns tokens, latency, and trust.
 
-That burns:
-- **tokens**
-- **time**
-- **trust**
+## 60-second OpenClaw install
 
----
+1. Copy the skill into your OpenClaw skills directory.
 
-## Core idea
+```bash
+mkdir -p ~/.openclaw/skills/token-discipline
+cp SKILL.md ~/.openclaw/skills/token-discipline/SKILL.md
+```
 
-Do not tell the agent to “be concise.”
-Tell it how to **route the task**.
+2. Paste the repo snippet into your workspace `AGENTS.md`.
+
+Use:
+- `snippets/AGENTS.md`
+
+3. Validate that the install actually contains the core policy markers.
+
+```bash
+python scripts/check_openclaw_install.py \
+  --skill ~/.openclaw/skills/token-discipline/SKILL.md \
+  --agents AGENTS.md
+```
+
+4. Run the smoke prompts in `SMOKE_TESTS.md`.
+
+### Expected behavior change
+
+After install, OpenClaw should:
+- answer direct questions in the first sentence
+- stay short by default in low-budget mode
+- prefer search and snippet reads before full-file reads
+- prefer API and CLI checks before browser work
+- stop after the first likely low-stakes diagnosis
+- isolate noisy background evals from active user replies
+
+## Before / after
+
+These are target behavior shifts, not benchmark claims.
+
+| Prompt | Wasteful path | Disciplined path | Target effect |
+| --- | --- | --- | --- |
+| `Did we push it yet?` | Multiple checks, long narration, answer arrives late | One quick check if needed, answer first, stop | Lower latency, lower token use |
+| `Why is GitHub still showing the old version?` | Browser plus API plus repo plus README plus npm | Check the most likely source first, stop at likely cause | Fewer tool calls, less context churn |
+| `Give me 3 concise X drafts.` | Brainstorm dump plus writing lecture | 2-5 strong options, no sprawl | Shorter output, better fit to request |
+
+See:
+- `examples/before-after.md`
+- `SMOKE_TESTS.md`
+- `evals/evals.json`
+
+## Core model
 
 Every request should map to:
-1. a **task class**
-2. a **budget mode**
-3. a **tool ceiling**
-4. a **verification threshold**
-5. an **output style**
+1. a task class
+2. a budget mode
+3. a tool ceiling
+4. a stop condition
+5. an output style
 
-That is what `token-discipline` provides.
+### Task classes
 
----
+- `direct_question`: answer first, no side quests
+- `simple_execute`: do the task, verify once, do not overanalyze
+- `diagnosis`: shortest dependency chain first, stop at likely cause
+- `research`: allow more depth and more evidence
+- `writing_ideation`: produce a small number of strong options
 
-## The 5 task classes
+### Budget modes
 
-### 1. Direct question
-Examples:
-- “Did we push it yet?”
-- “Is this live?”
-- “What’s the issue?”
+- `low`: max 2 tool calls on first pass, no browser by default, brief answer
+- `medium`: max 5 tool calls on first pass, targeted reads only
+- `high`: broader exploration for explicit research, audits, or high-stakes work
 
-Default behavior:
-- answer first
-- no tools unless essential
-- 1-3 lines
-- no side quests
+### Stop rules
 
-### 2. Simple execute
-Examples:
-- “Publish this release”
-- “Update the version”
-- “Give me 3 tweet drafts”
-
-Default behavior:
-- do the thing
-- minimal narration
-- one verification pass
-- no extra analysis unless asked
-
-### 3. Diagnosis
-Examples:
-- “Why is GitHub still showing the old version?”
-- “Why is this broken?”
-
-Default behavior:
-- shortest dependency chain first
-- cheap checks first
-- stop at likely root cause
-- escalate only if the first pass is inconclusive
-
-### 4. Research
-Examples:
-- “Compare these approaches”
-- “What architecture should we use?”
-
-Default behavior:
-- more depth allowed
-- more sources allowed
-- longer answer is acceptable
-- user should expect more spend
-
-### 5. Writing / ideation
-Examples:
-- “Write launch copy”
-- “Give me naming ideas”
-- “Rewrite this for X”
-
-Default behavior:
-- small number of strong options
-- avoid giant brainstorming dumps
-- shape tone to channel and task
-
----
-
-## The 3 budget modes
-
-### Low
-Use for direct questions, simple tasks, and low-stakes diagnosis.
-
-Rules:
-- max 2 tool calls on first pass
-- no browser by default
-- no full-file reads unless tiny and necessary
-- verify once
-- answer briefly
-- stop early
-
-### Medium
-Use for scoped debugging, planning, and moderate writing work.
-
-Rules:
-- max 5 tool calls on first pass
-- targeted reads only
-- browser only if cheaper checks fail
-- compact but complete answer
-- limited cross-checking
-
-### High
-Use for audits, architecture, deep debugging, and explicit research asks.
-
-Rules:
-- broader exploration allowed
-- multiple sources okay
-- more detailed answers okay
-- compact the task state when the thread gets long
-
----
-
-## Stop rules
-
-This is the heart of the method.
-
-A disciplined agent should:
 - answer direct questions before investigating
-- stop after the first likely root cause for low-stakes diagnosis
-- stop after one sufficient verification pass by default
-- not prove the same thing through CLI, API, and browser unless stakes justify it
-- search before reading, read snippets before whole files
-- not rerun work because duplicate queued messages arrived
-- switch to delta mode on long tasks instead of replaying the whole story
-- explicitly announce escalation when moving from low to medium/high effort
-- let direct user messages pre-empt background smoke tests, evals, and diagnostics
-- run smoke tests, evals, and other noisy probes in isolated sessions, not the active user-facing session
+- search before reading
+- read snippets before whole files
+- do not verify the same claim multiple ways unless stakes justify it
+- stop after one sufficient low-stakes diagnosis
+- switch to delta mode on long threads
+- do not rerun work for duplicate queued messages
+- direct user messages pre-empt background smoke tests and evals
 
----
+Reference docs:
+- `references/task-routing.md`
+- `references/budget-modes.md`
+- `references/stop-rules.md`
+- `references/tool-selection-order.md`
 
-## Tool selection order
+## When not to optimize aggressively
 
-Default cheapest-first order:
-1. answer from current context
-2. local search or snippet read
-3. local command or API check
-4. remote API / remote CLI check
-5. browser / rendered page
+Do not force strict low-budget behavior when:
+- the task is high-stakes or hard to reverse
+- the user explicitly asked for deep research
+- conflicting evidence appeared on the first pass
+- the work is legal, medical, financial, or production-critical
+- the user is explicitly paying for thoroughness rather than speed
 
-If step 2 or 3 gives a strong enough answer, stop.
+The point is better judgment, not a permanent austerity mode.
 
----
+## Proof and benchmarking
 
-## Quick install
+This repo now ships a simple benchmark kit so the policy can be measured instead of only described.
 
-### Option 1: Use the skill
-Copy `SKILL.md` into your skills system and trigger it whenever the user wants concise, fast, low-token, answer-first behavior.
+### What to measure
 
-### Option 2: Paste the snippets into your rules files
+For each prompt, compare baseline vs disciplined runs on:
+- tool calls
+- answer length
+- latency
+- answer-first behavior
+- stop-rule compliance
+- overall usefulness
+
+### Files
+
+- `evals/evals.json`: structured prompts with task class, budget, constraints, and pass criteria
+- `benchmarks/README.md`: how to run a proof-oriented benchmark
+- `benchmarks/openclaw-scorecard.md`: ready-to-fill scorecard template
+- `scripts/parse_openclaw_trace.py`: parses OpenClaw session and cron traces into benchmark metrics
+- `scripts/render_benchmark_template.py`: generates a scorecard from the eval set
+
+Typical benchmark flow:
+
+```bash
+python scripts/parse_openclaw_trace.py \
+  captures/baseline \
+  --evals evals/evals.json \
+  --output benchmarks/baseline-report.json
+
+python scripts/parse_openclaw_trace.py \
+  captures/disciplined \
+  --evals evals/evals.json \
+  --output benchmarks/disciplined-report.json
+
+python scripts/render_benchmark_template.py \
+  --evals evals/evals.json \
+  --baseline-report benchmarks/baseline-report.json \
+  --disciplined-report benchmarks/disciplined-report.json \
+  --output benchmarks/openclaw-scorecard.md
+```
+
+## OpenClaw integration path
+
+This repo is OpenClaw-first.
+
+Today it ships:
+- a reusable skill
+- an OpenClaw install checker
+- a machine-readable policy file
+- a hook map for future enforcement work
+
 See:
-- `snippets/AGENTS.md`
-- `snippets/CLAUDE.md`
-- `snippets/CURSOR_RULES.md`
-- `snippets/SYSTEM_PROMPT_BLOCK.md`
+- `integrations/openclaw/README.md`
+- `integrations/openclaw/policy.json`
 
-### Option 3: Adopt the method manually
-Use the task table, budget modes, stop rules, and tool order in your own system prompt or agent operating docs.
+The current repo does **not** ship runtime middleware yet.
+It does ship the pieces needed to start wiring real enforcement into OpenClaw:
+- request classification
+- budget selection
+- tool gating
+- background-job isolation
+- explicit escalation markers
 
-## Platform install map
-
-### OpenClaw
-- install the skill at `~/.openclaw/skills/token-discipline/SKILL.md`
-- optionally reinforce it in your workspace `AGENTS.md`
-
-### Claude Code
-- add the policy block to `CLAUDE.md`
-- use the skill text as guidance for answer-first, cheap-first behavior
-
-### Codex-style AGENTS setups
-- add the policy block to `AGENTS.md`
-- or install a global version in `~/.codex/AGENTS.md`
-
-### Cursor
-- paste the Cursor snippet into `.cursorrules`
-
-### Generic system prompts
-- use `snippets/SYSTEM_PROMPT_BLOCK.md`
-
----
-
-## Practical examples
-
-### Bad
-User: “Why is GitHub still showing the old version?”
-
-Agent:
-- checks git status
-- checks tags
-- checks API
-- checks release page
-- opens browser
-- reads README
-- checks npm
-- compares commit history
-- writes 10 paragraphs
-
-### Better
-Agent:
-- asks: what is most likely showing the version?
-- checks the release/tag or npm badge source first
-- finds the likely cause
-- reports it in 1-3 lines
-- only goes deeper if asked
-
----
-
-### Bad
-User: “Did we push it yet?”
-
-Agent:
-- reads multiple files
-- checks several remotes
-- gives a long narrative
-
-### Better
-Agent:
-- checks the repo state once if needed
-- answers in the first sentence
-- stops
-
----
-
-## What this repo is not
-
-This is not a full telemetry system.
-It does not count exact tokens across every provider.
-It does not enforce behavior through code hooks in v1.
-
-It is a practical, portable operating policy for better agent judgment.
-
----
-
-## Repo contents
+## Repo layout
 
 ```text
 .
-├── README.md
-├── PRD.md
-├── SKILL.md
-├── REPO_METADATA.md
-├── LAUNCH_DRAFTS.md
-├── ROADMAP.md
-├── CONTRIBUTING.md
-├── snippets/
-├── references/
-├── examples/
-└── evals/
+|-- README.md
+|-- SKILL.md
+|-- SMOKE_TESTS.md
+|-- ROADMAP.md
+|-- NEXT_STEPS.md
+|-- snippets/
+|-- references/
+|-- examples/
+|-- evals/
+|-- benchmarks/
+|-- integrations/openclaw/
+`-- scripts/
 ```
 
-Useful starting points:
-- `SKILL.md` for skill-based systems
-- `snippets/` for copy-paste policy blocks
-- `examples/before-after.md` for the simplest explanation of the method
-- `LAUNCH_DRAFTS.md` for public sharing
+## Positioning
 
----
+`token-discipline` is best thought of as:
+- a practical drop-in for solo agent users
+- a proof-friendly benchmark target
+- an OpenClaw-first path toward real enforcement
 
-## Good fit for
+It is not:
+- exact token metering for every provider
+- a hard-fail policy engine today
+- a replacement for deep work when depth is actually warranted
 
-- Claude Code
-- OpenClaw
-- Codex-style AGENTS setups
-- Cursor rules
-- Windsurf / Cline / similar agent systems
-- any team writing prompt or policy layers for agents
+## Roadmap
 
----
+Short version:
+- `v1.1`: OpenClaw-first quickstart, benchmark kit, install checker, policy file
+- `v2`: runtime enforcement inside OpenClaw
+- `v3`: telemetry and multi-platform expansion if the complexity is worth it
 
-## How to use this repo
-
-If you are adopting this for yourself:
-1. read `examples/before-after.md`
-2. copy one of the snippets into your rules file
-3. adapt the budget ceilings to your taste
-4. test against prompts in `evals/evals.json`
-
-If you are building a public skill or policy layer:
-1. start from `SKILL.md`
-2. keep the routing model and stop rules intact
-3. customize only the framework-specific wording
-4. add your own examples from real failure cases
-
-## Suggested public positioning
-
-**Short pitch:**
-AI agents need better judgment about how much work a task deserves.
-
-**Tagline options:**
-- Task-aware token budgeting for AI agents
-- Stop agents from treating every task like an investigation
-- Make agents cheaper, faster, and less verbose
-- Proportional effort for AI agents
-
----
-
-## Future work
-
-Likely next steps:
-- small benchmark harness
-- before/after evals
-- optional helper scripts
-- framework-specific variants
-- tighter integration with memory systems like Hippo
-
----
-
-## License
-
-MIT
-per scripts
-- framework-specific variants
-- tighter integration with memory systems like Hippo
-
----
+See `ROADMAP.md` for the current plan.
 
 ## License
 

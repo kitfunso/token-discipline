@@ -4,14 +4,16 @@
 `token-discipline`
 
 ## One-line description
-Task-aware token budgeting for AI agents.
+Token optimization for AI agents with task routing, budget modes, stop rules, and OpenClaw-first integration scaffolding.
 
 ## Short GitHub description options
-1. Stop agents from treating every task like an investigation.
-2. Task-aware token budgeting, stop rules, and concise-first defaults for AI agents.
-3. A portable framework for making AI agents cheaper, faster, and less verbose.
+
+1. Token optimization for AI agents with stop rules and OpenClaw-first integration scaffolding.
+2. Make AI agents cheaper, faster, and less verbose through task routing and budget modes.
+3. Task-aware token budgeting, benchmark prompts, and enforcement scaffolding for agent workflows.
 
 ## Suggested topics
+
 - ai-agents
 - prompt-engineering
 - llm
@@ -22,24 +24,35 @@ Task-aware token budgeting for AI agents.
 - openclaw
 - prompts
 - developer-tools
-- productivity
+- token-optimization
 
 ## Suggested README badge ideas
+
 - MIT license
-- optional ecosystem badges later
+- OpenClaw-first
+- benchmark kit
 
 ## Positioning
-This repo is not about squeezing out every token at all costs.
-It is about proportional effort.
+
+This repo should be positioned as:
+- a practical drop-in for solo power users
+- a proof-friendly benchmark target
+- an OpenClaw-first path toward real enforcement
 
 The message:
-- agents should answer direct questions directly
-- agents should take the cheapest adequate path first
-- agents should stop once the task is satisfied
-- agents should escalate deliberately, not accidentally
+- classify the task before acting
+- use the cheapest adequate path first
+- stop once the task is satisfied
+- escalate deliberately, not accidentally
+- keep background noise away from live users
 
-## Audience
-- power users of AI coding agents
-- people maintaining AGENTS.md / CLAUDE.md / rule files
-- teams building multi-agent workflows
-- anyone paying attention to context window, speed, and cost
+## Primary audience
+
+- solo OpenClaw users who want better default agent judgment
+- power users maintaining `AGENTS.md`, `CLAUDE.md`, or other policy layers
+- people who care about token spend, latency, and verbosity
+
+## Secondary audience
+
+- teams standardizing agent behavior
+- tool builders who want a policy file and benchmark target before building middleware

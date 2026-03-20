@@ -1,0 +1,107 @@
+{
+  "version": "0.1.0",
+  "platform": "openclaw",
+  "goal": "Token optimization through proportional effort and cheap-first execution.",
+  "default_skill_path": "~/.openclaw/skills/token-discipline/SKILL.md",
+  "default_agents_path": "AGENTS.md",
+  "task_classes": [
+    {
+      "id": "direct_question",
+      "default_budget": "low",
+      "answer_first": true,
+      "max_lines": 3
+    },
+    {
+      "id": "simple_execute",
+      "default_budget": "low",
+      "answer_first": false,
+      "max_lines": 6
+    },
+    {
+      "id": "diagnosis",
+      "default_budget": "low",
+      "answer_first": true,
+      "max_lines": 8
+    },
+    {
+      "id": "research",
+      "default_budget": "high",
+      "answer_first": false,
+      "max_lines": null
+    },
+    {
+      "id": "writing_ideation",
+      "default_budget": "low",
+      "answer_first": false,
+      "max_lines": 10
+    }
+  ],
+  "budget_modes": {
+    "low": {
+      "first_pass_tool_limit": 2,
+      "browser_default": "forbidden",
+      "full_file_reads": "avoid",
+      "verification_passes": 1
+    },
+    "medium": {
+      "first_pass_tool_limit": 5,
+      "browser_default": "fallback_only",
+      "full_file_reads": "targeted_only",
+      "verification_passes": 1
+    },
+    "high": {
+      "first_pass_tool_limit": null,
+      "browser_default": "allowed_when_useful",
+      "full_file_reads": "allowed",
+      "verification_passes": "as_needed"
+    }
+  },
+  "stop_rules": [
+    "answer direct questions before investigating",
+    "search before reading",
+    "read snippets before whole files",
+    "do not verify the same claim through multiple surfaces unless stakes justify it",
+    "stop after the first likely low-stakes diagnosis",
+    "do not rerun work for duplicate queued messages",
+    "direct user messages pre-empt background smoke tests, evals, and diagnostics"
+  ],
+  "hook_points": [
+    {
+      "id": "request_classifier",
+      "stage": "pre_routing",
+      "purpose": "Map the user request to task class and budget before tool use."
+    },
+    {
+      "id": "budget_selector",
+      "stage": "pre_tool",
+      "purpose": "Expose first-pass ceilings and browser policy to the tool layer."
+    },
+    {
+      "id": "tool_gate",
+      "stage": "tool_dispatch",
+      "purpose": "Prefer search, snippets, and API checks before browser work."
+    },
+    {
+      "id": "background_isolation",
+      "stage": "scheduler",
+      "purpose": "Ensure live user turns pre-empt noisy background jobs."
+    },
+    {
+      "id": "escalation_marker",
+      "stage": "reply_shaping",
+      "purpose": "Make budget escalation explicit when the cheap path is insufficient."
+    }
+  ],
+  "required_skill_markers": [
+    "Infer these 5 things before acting",
+    "answer in the first sentence",
+    "max 2 tool calls on first pass",
+    "Direct user messages always pre-empt background smoke tests"
+  ],
+  "required_agents_markers": [
+    "Answer direct questions in the first sentence.",
+    "Search before read, snippet before whole file.",
+    "API/CLI before browser when possible.",
+    "Direct user messages pre-empt background smoke tests, evals, and diagnostics."
+  ]
+}

@@ -1,28 +1,62 @@
 # Before / After
 
+This file shows target behavior shifts for `token-discipline`.
+These are examples of the intended delta, not measured benchmark claims.
+
 ## Example 1: Direct question
-**User:** Did we push it yet?
 
-**Before:**
-Long reply, multiple checks, answer arrives late.
+**Prompt:** `Did we push it yet?`
 
-**After:**
-One quick check if needed, direct answer in the first sentence, stop.
+**Typical wasteful run**
+- checks multiple surfaces
+- explains the checking process
+- answers late
 
-## Example 2: Diagnosis
-**User:** Why is GitHub still showing the old version?
+**Target disciplined run**
+- answers in the first sentence
+- uses at most one quick check if needed
+- stops in 1-3 lines
 
-**Before:**
-Checks the repo, release page, browser, README, npm, and API, then writes a long explanation.
+**Expected delta**
+- lower latency
+- fewer tool calls
+- shorter answer
 
-**After:**
-Identifies the most likely version surface first, checks that source, reports likely cause, escalates only if still unclear.
+## Example 2: Cheap diagnosis
+
+**Prompt:** `Why is GitHub still showing the old version?`
+
+**Typical wasteful run**
+- checks repo, release page, browser, README, npm, and API
+- keeps expanding the search surface
+- writes a long explanation before naming the likely cause
+
+**Target disciplined run**
+- asks what surface is actually stale
+- checks the most likely source first
+- reports the likely cause and the next step
+- escalates only if the cheap path is inconclusive
+
+**Expected delta**
+- fewer redundant checks
+- less context churn
+- faster path to a useful answer
 
 ## Example 3: Writing
-**User:** Give me 3 concise X drafts.
 
-**Before:**
-Huge brainstorm list plus strategy notes.
+**Prompt:** `Give me 3 concise X drafts.`
 
-**After:**
-Three strong drafts, short and channel-appropriate.
+**Typical wasteful run**
+- produces 10 options
+- includes commentary about tone strategy
+- overexplains the choices
+
+**Target disciplined run**
+- gives 2-5 strong options
+- fits the channel
+- avoids brainstorming sprawl
+
+**Expected delta**
+- shorter output
+- less user scanning cost
+- better fit to the actual request

@@ -1,6 +1,6 @@
 ---
 name: token-discipline
-description: Make the agent use proportional effort and spend fewer tokens. Use whenever the user wants concise answers, quick mode, low-token mode, fast diagnosis, minimal prompting, compact planning, answer-first behavior, or cheaper agent behavior. Also use whenever a task risks expanding beyond what was asked, when duplicate messages arrive, when browser/tool overuse is likely, when the user says things like "just answer", "one line", "short answer", "no tools", or "no browser", or when the agent should solve the task via the cheapest adequate path first and escalate only if needed.
+description: Make the agent use proportional effort and spend fewer tokens. Use whenever the user wants concise answers, quick mode, low-token mode, fast diagnosis, minimal prompting, compact planning, answer-first behavior, or cheaper agent behavior. Also use for low-stakes repo-local checks like "old version", "stale badge", "release tag", "current repo", or "ready to push", especially when the user says things like "just answer", "diagnose only", "one line", "short answer", "no tools", or "no browser". Use it whenever a task risks expanding beyond what was asked, when duplicate messages arrive, when browser/tool overuse is likely, or when the agent should solve the task via the cheapest adequate path first and escalate only if needed.
 ---
 
 # Token Discipline
@@ -99,6 +99,9 @@ Rules:
 - no browser by default
 - no full-file reads unless tiny and necessary
 - prefer search/snippet reads
+- do not use memory_search, hippo_recall, or other project-memory tools for low-budget tasks unless the user explicitly asked about prior decisions, prior chats, or project history
+- if the prompt most naturally refers to the current repo, current workspace, current branch, current HEAD, or current release, assume the current repo/workspace first instead of asking a clarifying question that a cheap local check would answer
+- do not spend a low-budget tool call rereading this skill or hunting for its file path
 - answer briefly
 - verify once
 - stop early
@@ -140,6 +143,7 @@ Rules:
 - read the smallest useful chunk
 - do not pull huge files into context if a snippet will do
 - do not use browser when a direct API/CLI answer is available
+- for repo-local questions like "the release tag", "this repo", "the current version", or "is this ready to push", assume the current repo unless the user clearly pointed somewhere else
 - do not perform parallel “proof by exhaustion” on low-stakes questions
 
 ---
@@ -152,6 +156,7 @@ These are mandatory unless stakes clearly justify more work.
 - If a likely root cause is found for a low-stakes diagnosis, stop and report it.
 - Do not verify the same claim through multiple surfaces unless needed.
 - Do not reread the same source unless context changed.
+- Do not spend a tool call reloading this skill during a low-budget task.
 - Do not replay the entire history on a follow-up.
 - Do not expand execution into analysis unless asked.
 - Do not rerun the same work because duplicate queued messages arrived.
@@ -263,9 +268,23 @@ Good behavior:
 - identify what surface is showing the version
 - check the most likely source first
 - stop after likely cause
+- do not use memory_search if the answer can be given from current repo/tool context or stable release mechanics
 
 Bad behavior:
 - check browser, API, repo, release, README, npm, and cache all at once
+- spend the first tool call searching project memory for a generic release/version question
+
+### Example: repo-local direct check
+User: “No browser. Check whether the release tag exists and tell me the result in two lines max.”
+
+Good behavior:
+- assume the current repo / current HEAD unless another target was named
+- use one cheap local check
+- answer in at most two lines
+
+Bad behavior:
+- ask which tag they mean before checking the current repo
+- spend a tool call rereading this skill
 
 ### Example: writing
 User: “Give me a concise X post for this release.”
